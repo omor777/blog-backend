@@ -1,7 +1,11 @@
 import User from "../models/user.models.js";
 import error from "../utils/error.js";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const registerController = async (req, res, next) => {
   const { name, email, password, bio, address, image, date_of_birth } =
@@ -20,9 +24,9 @@ const registerController = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const isExist = await User.findOne({ email });
+    const isUserExist = await User.findOne({ email });
 
-    if (isExist) throw error("User already exist with this email", 400);
+    if (isUserExist) throw error("User already exist with this email", 400);
 
     const user = new User({
       name,
@@ -42,4 +46,31 @@ const registerController = async (req, res, next) => {
   }
 };
 
-export { registerController };
+const loginController = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !email.trim()) throw error("Email is required!");
+
+    if (!password || !password.trim()) throw error("Password is required!");
+
+    const user = await User.findOne({ email });
+
+    if (!user) throw error("User not found!", 404);
+
+    const isMatchPassword = await bcrypt.compare(password, user.password);
+
+    if (!isMatchPassword) throw error("Invalid credentials");
+
+    const payload = { email: user.email, id: user._id };
+
+    const token = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, {
+      expiresIn: "30d",
+    });
+
+    res.status(200).json({ message: "Login successful", token });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export { registerController, loginController };
