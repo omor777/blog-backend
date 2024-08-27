@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 
-const userSchema = Schema(
+const userSchema = new Schema(
   {
     name: {
       type: String,
@@ -10,9 +10,22 @@ const userSchema = Schema(
       type: String,
       required: [true, "Email is required!"],
     },
-    bio: String,
-    address: String,
-    date_of_birth: Date,
+    password: {
+      type: String,
+      required: [true, "Password is required!"],
+      minLength: [6, "Password must be at least 6 character!"],
+    },
+    bio: {
+      type: String,
+    },
+    address: {
+      type: String,
+      default: "",
+    },
+    date_of_birth: {
+      type: Date,
+      default: Date.now(),
+    },
     image: {
       type: String,
       default:
