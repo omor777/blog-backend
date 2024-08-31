@@ -40,7 +40,7 @@ const registerController = async (req, res, next) => {
 
     await user.save();
 
-    res.status(201).json({ message: "Registration successful" });
+    res.status(201).json({ message: "Registration successful", success: true });
   } catch (e) {
     next(e);
   }
@@ -67,7 +67,11 @@ const loginController = async (req, res, next) => {
       expiresIn: "30d",
     });
 
-    res.status(200).json({ message: "Login successful", token });
+    delete user.password;
+
+    res
+      .status(200)
+      .json({ message: "Login successful", token, success: true, user });
   } catch (e) {
     next(e);
   }
