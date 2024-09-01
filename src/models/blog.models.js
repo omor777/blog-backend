@@ -7,6 +7,11 @@ const blogSchema = new Schema(
     },
     content: {
       type: String,
+      default: "",
+    },
+    image: {
+      type: String,
+      default: "",
     },
     slug: {
       type: String,
