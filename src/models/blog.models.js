@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 const blogSchema = new Schema(
   {
     title: {
@@ -15,6 +15,11 @@ const blogSchema = new Schema(
     },
     slug: {
       type: String,
+      required: true,
+    },
+    author: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },

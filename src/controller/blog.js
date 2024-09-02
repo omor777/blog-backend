@@ -13,6 +13,7 @@ const createBlogController = async (req, res, next) => {
       content,
       image,
       slug,
+      author: req.user.id,
     });
     await blog.save();
 
