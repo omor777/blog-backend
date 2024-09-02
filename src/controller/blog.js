@@ -23,4 +23,15 @@ const createBlogController = async (req, res, next) => {
   }
 };
 
-export { createBlogController };
+const getAllBlogController = async (req, res, next) => {
+  // TODO: search filter sort
+  try {
+    const blogs = await Blog.find().populate("author", "-password").exec();
+
+    res.status(200).json(blogs);
+  } catch (e) {
+    next();
+  }
+};
+
+export { createBlogController, getAllBlogController };
