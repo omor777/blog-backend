@@ -25,12 +25,27 @@ const createBlogController = async (req, res, next) => {
 
 const getAllBlogController = async (req, res, next) => {
   // TODO: search filter sort
-  try {
-    const blogs = await Blog.find().populate("author", "-password").exec();
+  const page = parseInt(req.query?.page) || 1;
+  const limit = 5;
 
-    res.status(200).json(blogs);
+  try {
+    const totalBlogs = await Blog.countDocuments();
+
+    const blogs = await Blog.find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("author", "-password")
+      .exec();
+
+    const hasMore = page * limit < totalBlogs;
+
+    res.status(200).json({
+      success: true,
+      data: blogs,
+      hasMore,
+    });
   } catch (e) {
-    next();
+    next(e);
   }
 };
 
