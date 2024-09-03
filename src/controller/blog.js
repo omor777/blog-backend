@@ -49,4 +49,19 @@ const getAllBlogController = async (req, res, next) => {
   }
 };
 
-export { createBlogController, getAllBlogController };
+const likeController = async (req, res, next) => {
+  const { postId } = req.params;
+
+  try {
+    const likedPost = await Blog.findById(postId);
+
+    if (!likedPost) throw error("Post is not exist", 404);
+
+    // const isAlreadyLiked = await 
+
+  } catch (e) {
+    next(e);
+  }
+};
+
+export { createBlogController, getAllBlogController, likeController };
