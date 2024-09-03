@@ -32,11 +32,33 @@ const getAllBlogController = async (req, res, next) => {
   try {
     const totalBlogs = await Blog.countDocuments();
 
-    const blogs = await Blog.find()
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("author", "-password")
-      .exec();
+    const blogs = await Blog.aggregate([
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "blog_post",
+          as: "likes",
+        },
+      },
+      {
+        $addFields: {
+          likeCount: { $size: "$likes" },
+        },
+      },
+      {
+        $skip: (page - 1) * limit,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    // const blogs = await Blog.find()
+    //   .skip((page - 1) * limit)
+    //   .limit(limit)
+    //   .populate("author", "-password")
+    //   .exec();
 
     const hasMore = page * limit < totalBlogs;
 
