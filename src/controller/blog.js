@@ -1,4 +1,5 @@
 import Blog from "../models/blog.models.js";
+import Like from "../models/like.models.js";
 import error from "../utils/error.js";
 import { generateSlug } from "../utils/slug.js";
 
@@ -51,14 +52,31 @@ const getAllBlogController = async (req, res, next) => {
 
 const likeController = async (req, res, next) => {
   const { postId } = req.params;
+  const { content } = req.body;
 
   try {
+    if (!content || !content.trim())
+      throw error("Comment content is required!", 400);
+
     const likedPost = await Blog.findById(postId);
 
     if (!likedPost) throw error("Post is not exist", 404);
+    console.log(req.user.id);
+    const isAlreadyLiked = await Like.findOne({ user: req.user.id });
 
-    // const isAlreadyLiked = await 
+    if (isAlreadyLiked) {
+      await Like.deleteOne({ user: req.user.id });
+      return res.status(204).json();
+    } else {
+      const like = new Like({
+        blog_post: likedPost._id,
+        user: req.user.id,
+        content,
+      });
+      await like.save();
 
+      res.status(201).json({ success: true, message: "Like successful" });
+    }
   } catch (e) {
     next(e);
   }
