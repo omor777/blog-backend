@@ -46,19 +46,7 @@ const getAllBlogController = async (req, res, next) => {
           likeCount: { $size: "$likes" },
         },
       },
-      {
-        $skip: (page - 1) * limit,
-      },
-      {
-        $limit: limit,
-      },
     ]);
-
-    // const blogs = await Blog.find()
-    //   .skip((page - 1) * limit)
-    //   .limit(limit)
-    //   .populate("author", "-password")
-    //   .exec();
 
     const hasMore = page * limit < totalBlogs;
 
@@ -67,6 +55,18 @@ const getAllBlogController = async (req, res, next) => {
       data: blogs,
       hasMore,
     });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const getSinglePostController = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    const post = await Blog.findById(postId).populate("author", "-password");
+    if (!post) throw error("Post not found!", 404);
+
+    res.status(200).json({ success: true, data: post });
   } catch (e) {
     next(e);
   }
@@ -102,4 +102,9 @@ const likeController = async (req, res, next) => {
   }
 };
 
-export { createBlogController, getAllBlogController, likeController };
+export {
+  createBlogController,
+  getAllBlogController,
+  likeController,
+  getSinglePostController,
+};
