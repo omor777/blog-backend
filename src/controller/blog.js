@@ -1,7 +1,10 @@
+import mongoose from "mongoose";
 import Blog from "../models/blog.models.js";
+import Comment from "../models/comment.models.js";
 import Like from "../models/like.models.js";
 import error from "../utils/error.js";
 import { generateSlug } from "../utils/slug.js";
+import AggregationPipeline from "../helpers/aggregation.js";
 
 const createBlogController = async (req, res, next) => {
   const { title, content, image } = req.body;
@@ -61,12 +64,15 @@ const getAllBlogController = async (req, res, next) => {
 };
 
 const getSinglePostController = async (req, res, next) => {
-  const { postId } = req.params;
-  try {
-    const post = await Blog.findById(postId).populate("author", "-password");
-    if (!post) throw error("Post not found!", 404);
+  const postId = new mongoose.Types.ObjectId(req.params.postId);
 
-    res.status(200).json({ success: true, data: post });
+  console.log(postId);
+  try {
+    const post = await Blog.aggregate(
+      AggregationPipeline.getSingleBlogDetails(postId)
+    );
+
+    res.status(200).json({ success: true, data: post[0] });
   } catch (e) {
     next(e);
   }
@@ -102,9 +108,38 @@ const likeController = async (req, res, next) => {
   }
 };
 
+const addCommentController = async (req, res, next) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  try {
+    if (!content || !content.trim()) {
+      throw error("comment content is required!");
+    }
+
+    const post = await Blog.findOne({ _id: postId });
+
+    if (!post) throw error("Post not found", 404);
+
+    const comment = new Comment({
+      postId,
+      userId: req.user.id,
+      content,
+    });
+
+    await comment.save();
+
+    res.status(201).json({ success: true, message: "comment have commented" });
+
+    console.log("ok");
+  } catch (e) {
+    next(e);
+  }
+};
+
 export {
   createBlogController,
   getAllBlogController,
   likeController,
   getSinglePostController,
+  addCommentController,
 };

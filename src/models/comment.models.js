@@ -5,12 +5,12 @@ const commentSchema = new Schema({
     type: String,
     required: [true, "Comment content is required!"],
   },
-  blog_post: {
+  postId: {
     type: mongoose.Types.ObjectId,
     ref: "Blog",
     required: [true, "Blog post ID is required!"],
   },
-  user: {
+  userId: {
     type: mongoose.Types.ObjectId,
     ref: "User",
     required: [true, "User ID is required!"],
