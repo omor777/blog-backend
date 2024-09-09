@@ -6,6 +6,10 @@ dotenv.config();
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Blog from "../models/blog.models.js";
+import mongoose from "mongoose";
+import Comment from "../models/comment.models.js";
+import AggregationPipeline from "../helpers/aggregation.js";
 
 const registerController = async (req, res, next) => {
   const { name, email, password, bio, address, image, date_of_birth } =
@@ -77,4 +81,30 @@ const loginController = async (req, res, next) => {
   }
 };
 
-export { registerController, loginController };
+const getUserProfileController = async (req, res, next) => {
+  const userId = req?.user?.id;
+  try {
+    const userDetails = await User.findById(userId, ["-password", "-__v", "-following_users",'-followers','-bookmarks']);
+
+
+    const allBlogPosts = await Blog.aggregate(
+      AggregationPipeline.getUserPublishedBlog(userId)
+    );
+
+    const totalComments = await Comment.countDocuments({
+      userId,
+    });
+
+    res.status(200).json({
+      success: true,
+      userDetails,
+      allBlogPosts,
+      totalPosts: allBlogPosts?.length,
+      totalComments,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export { registerController, loginController, getUserProfileController };

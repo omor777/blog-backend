@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 class AggregationPipeline {
   constructor() {}
 
@@ -15,8 +17,32 @@ class AggregationPipeline {
         },
       },
       { $unwind: "$userInfo" },
+    ];
+  }
 
-     
+  static getUserPublishedBlog(userId) {
+    return [
+      {
+        $match: { author: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "blog_post",
+          as: "likes",
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          content: 1,
+          image: 1,
+          createdAt: 1,
+          slug: 1,
+          totalLikes: { $size: "$likes" },
+        },
+      },
     ];
   }
 }
