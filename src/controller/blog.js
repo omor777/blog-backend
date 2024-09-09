@@ -136,10 +136,25 @@ const addCommentController = async (req, res, next) => {
   }
 };
 
+const getAllCommentsController = async (req, res, next) => {
+  const { postId } = req.params;
+
+  try {
+    const comments = await Comment.find({ postId })
+      .populate("userId", ["-password"])
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, data: comments });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export {
   createBlogController,
   getAllBlogController,
   likeController,
   getSinglePostController,
   addCommentController,
+  getAllCommentsController,
 };
